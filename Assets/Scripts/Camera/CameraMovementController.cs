@@ -8,16 +8,34 @@ public class CameraMovementController : MonoBehaviour
     [SerializeField] private float moveSpeed = 20f;
     [SerializeField] private float rotationSpeed = 120f;
 
-    [Header("Zoom Settings")]
+    [Header("Height/Zoom Settings")]
     public CinemachineCamera CinemachineCamera;
+    public bool ChangesHeight = true;
     [SerializeField] private float minHeight = 5f;
     [SerializeField] private float maxHeight = 50f;
-    [SerializeField] private float zoomSpeed = 200f;
+    [SerializeField] private float maxFOV = 75f;
+    [SerializeField] private float minFOV = 5f;
+    [SerializeField] private float verticalSpeed = 200f;
+
+    [Header("Tilt Settings")]
+    [SerializeField] private float minTilt = 15f;
+    [SerializeField] private float maxTilt = 70f;
+    private float currentTilt = 0f;
+
+    [Header("FocusingElementsSettings")]
+    public Transform CameraTarget { get => cameraTarget; }
+    private Transform cameraTarget;
+
+
+    private void Start()
+    {
+        currentTilt = transform.rotation.x;
+    }
 
     private void Update()
     {
         HandleMovement();
-        HandleHeightZoom();
+        HandleCameraHeight();
         HandleRotation();
     }
 
@@ -38,16 +56,27 @@ public class CameraMovementController : MonoBehaviour
         transform.position += moveDirection * moveSpeed * Time.deltaTime;
     }
 
-    private void HandleHeightZoom() // maybe we can add a camera zoom (change the fov) when really close to the floor
+    private void HandleCameraHeight() 
     {
         float scroll = Input.GetAxis("Mouse ScrollWheel");
 
         if (Mathf.Abs(scroll) > 0.01f)
         {
-            float newY = transform.position.y - (scroll * zoomSpeed * Time.deltaTime);
-            newY = Mathf.Clamp(newY, minHeight, maxHeight);
+            if(ChangesHeight)
+            {
+                float newY = transform.position.y - (scroll * verticalSpeed * Time.deltaTime);
+                newY = Mathf.Clamp(newY, minHeight, maxHeight);
 
-            transform.position = new Vector3(transform.position.x, newY, transform.position.z);
+                transform.position = new Vector3(transform.position.x, newY, transform.position.z);
+            } else
+            {
+                float currentFOV = CinemachineCamera.Lens.FieldOfView;
+                float newFOV = currentFOV - (scroll * verticalSpeed * Time.deltaTime);
+
+                newFOV = Mathf.Clamp(newFOV, minFOV, maxFOV);
+                CinemachineCamera.Lens.FieldOfView = newFOV;
+            }
+         
         }
     }
 
@@ -57,6 +86,13 @@ public class CameraMovementController : MonoBehaviour
         {
             float mouseX = Input.GetAxis("Mouse X");
             transform.Rotate(Vector3.up, mouseX * rotationSpeed * Time.deltaTime, Space.World);
+
+            float mouseY = Input.GetAxis("Mouse Y");
+            currentTilt -= mouseY * rotationSpeed * Time.deltaTime;
+
+            currentTilt = Mathf.Clamp(currentTilt, minTilt, maxTilt);
+
+            transform.localEulerAngles = new Vector3(currentTilt, transform.localEulerAngles.y, 0f);
         }
     }
 

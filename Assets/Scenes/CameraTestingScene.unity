@@ -1266,7 +1266,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60.000004
+  field of view: 60
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -2854,7 +2854,7 @@ MonoBehaviour:
     LookAtTarget: {fileID: 0}
     CustomLookAtTarget: 0
   Lens:
-    FieldOfView: 60.000004
+    FieldOfView: 60
     OrthographicSize: 5
     NearClipPlane: 0.3
     FarClipPlane: 1000
@@ -2914,12 +2914,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e51b4404e841c2e4699daaabb79c2be3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraMovementController
-  moveSpeed: 50
-  rotationSpeed: 150
+  moveSpeed: 75
+  rotationSpeed: 225
   CinemachineCamera: {fileID: 2010542831}
+  ChangesHeight: 0
   minHeight: 5
-  maxHeight: 125
-  zoomSpeed: 500
+  maxHeight: 150
+  maxFOV: 75
+  minFOV: 5
+  verticalSpeed: 500
+  minTilt: 15
+  maxTilt: 70
 --- !u!1 &2140134364
 GameObject:
   m_ObjectHideFlags: 0
