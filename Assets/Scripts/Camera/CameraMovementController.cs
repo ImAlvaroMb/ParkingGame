@@ -1,8 +1,9 @@
 using Unity.Cinemachine;
 using UnityEngine;
-
+using Utilities;
+using Enums;
 // IMPORTANT THE CURRENT PROJECT INPUT SETTINGS ARE SET TO BOTH, WE SHOULD CHANGE THEM BACK TO EITHER THE NEW OR OLD ONE
-public class CameraMovementController : MonoBehaviour
+public class CameraMovementController : AbstractSingleton<CameraMovementController>
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 20f;
@@ -20,24 +21,38 @@ public class CameraMovementController : MonoBehaviour
     [Header("Tilt Settings")]
     [SerializeField] private float minTilt = 15f;
     [SerializeField] private float maxTilt = 70f;
-    private float currentTilt = 0f;
+    private float _currentTilt = 0f;
 
     [Header("FocusingElementsSettings")]
+    public Transform TargetTesting1;
+    public Transform TargetTesting2;
+    public CinemachineCamera TargetCamera;
     public Transform CameraTarget { get => cameraTarget; }
     private Transform cameraTarget;
 
+    public GameObject temporalAnim;
 
-    private void Start()
+    private bool _hastTarget = false;
+    private Vector3 _lastCameraPosition;
+    private Quaternion _lastCameraRotation;
+
+    protected override void Start()
     {
-        currentTilt = transform.rotation.x;
+        base.Start();
+        _currentTilt = transform.rotation.x;
     }
 
     private void Update()
     {
-        HandleMovement();
-        HandleCameraHeight();
-        HandleRotation();
+        if(!_hastTarget)
+        {
+            HandleMovement();
+            HandleCameraHeight();
+            HandleRotation();
+        }
     }
+
+    #region Camera Basic Movement
 
     private void HandleMovement() // will either recieve float values from input controller or be locally subscribed to it
     {
@@ -88,12 +103,68 @@ public class CameraMovementController : MonoBehaviour
             transform.Rotate(Vector3.up, mouseX * rotationSpeed * Time.deltaTime, Space.World);
 
             float mouseY = Input.GetAxis("Mouse Y");
-            currentTilt -= mouseY * rotationSpeed * Time.deltaTime;
+            _currentTilt -= mouseY * rotationSpeed * Time.deltaTime;
 
-            currentTilt = Mathf.Clamp(currentTilt, minTilt, maxTilt);
+            _currentTilt = Mathf.Clamp(_currentTilt, minTilt, maxTilt);
 
-            transform.localEulerAngles = new Vector3(currentTilt, transform.localEulerAngles.y, 0f);
+            transform.localEulerAngles = new Vector3(_currentTilt, transform.localEulerAngles.y, 0f);
         }
+    }
+
+    public void StartTransitionBetweenLevels()
+    {
+        temporalAnim.SetActive(true);
+    }
+
+    public void StopTransitionBetweenLevels()
+    {
+        temporalAnim.SetActive(false);
+    }
+
+    public void MoveCameraTo(Vector3 position, Quaternion rotation)
+    {
+        transform.position = position;
+        transform.rotation = rotation;
+    }
+
+    #endregion
+
+
+    public void ChangeTarget(Transform newTarget)
+    {
+        if (newTarget == null) return;
+
+        _lastCameraPosition = transform.position;
+        _lastCameraRotation = transform.rotation;
+
+        cameraTarget = newTarget;
+        _hastTarget = cameraTarget;
+        TargetCamera.Follow = cameraTarget;
+        TargetCamera.LookAt = cameraTarget;
+        TargetCamera.gameObject.SetActive(true);
+    }
+    [ContextMenu("StopTarget")]
+    public void StopTarget()
+    {
+        cameraTarget = null;
+        _hastTarget = false;
+        TargetCamera.gameObject.SetActive(false);
+        TargetCamera.Follow = null;
+        TargetCamera.LookAt = null;
+        transform.position = _lastCameraPosition;
+        transform.rotation = _lastCameraRotation;
+    }
+
+    [ContextMenu("Target1")]
+    public void Test1()
+    {
+        ChangeTarget(TargetTesting1);
+    }
+
+    [ContextMenu("Target2")]
+    public void Test2()
+    {
+        ChangeTarget(TargetTesting2);
     }
 
 }
