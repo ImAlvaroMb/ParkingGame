@@ -13,7 +13,9 @@ public class AllLevelsController : AbstractSingleton<AllLevelsController>
         if(levelController.LevelID == 0)
         {
             _activeLevel = levelController;
-            
+        } else
+        {
+            levelController.SetLevelInnactive();
         }
     }
 
@@ -26,7 +28,6 @@ public class AllLevelsController : AbstractSingleton<AllLevelsController>
         if (_activeLevel != null) _activeLevel.SetLevelInnactive();
 
         _activeLevel = nextLevel;
-        CameraMovementController.Instance.MoveCameraTo(_activeLevel.InitialCameraPosition.position, _activeLevel.InitialCameraPosition.rotation);
         _activeLevel.SetLevelActive();
     }
 

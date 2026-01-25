@@ -3,7 +3,7 @@ using UnityEngine;
 using Utilities;
 using Enums;
 // IMPORTANT THE CURRENT PROJECT INPUT SETTINGS ARE SET TO BOTH, WE SHOULD CHANGE THEM BACK TO EITHER THE NEW OR OLD ONE
-public class CameraMovementController : AbstractSingleton<CameraMovementController>
+public class CameraMovementController : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 20f;
@@ -30,15 +30,13 @@ public class CameraMovementController : AbstractSingleton<CameraMovementControll
     public Transform CameraTarget { get => cameraTarget; }
     private Transform cameraTarget;
 
-    public GameObject temporalAnim;
-
+    public GameObject TemporalAnim;
     private bool _hastTarget = false;
     private Vector3 _lastCameraPosition;
     private Quaternion _lastCameraRotation;
 
-    protected override void Start()
+    private void Start()
     {
-        base.Start();
         _currentTilt = transform.rotation.x;
     }
 
@@ -113,12 +111,13 @@ public class CameraMovementController : AbstractSingleton<CameraMovementControll
 
     public void StartTransitionBetweenLevels()
     {
-        temporalAnim.SetActive(true);
+        TemporalAnim.SetActive(true);
+        Invoke("StopTransitionBetweenLevels", 0.75f);
     }
 
     public void StopTransitionBetweenLevels()
     {
-        temporalAnim.SetActive(false);
+        TemporalAnim.SetActive(false);
     }
 
     public void MoveCameraTo(Vector3 position, Quaternion rotation)
